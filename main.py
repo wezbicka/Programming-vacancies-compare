@@ -34,6 +34,17 @@ def predict_rub_salary(vacancy):
                 return predict_salary
 
 
+def get_average_salary(salaries):
+    total = 0
+    count_vacancies = 0
+    for salary in salaries:
+        if salary:
+            count_vacancies += 1
+            total += salary
+    average_salary = int(total / count_vacancies)
+    return count_vacancies, average_salary
+
+
 def get_count_vacancies(programing_language):
     count = get_response(programing_language)["found"]
     return count
@@ -45,6 +56,15 @@ def statistic_count_vacancies(programing_languages):
         count = get_count_vacancies(lang)
         languages_statistic[lang] = {}
         languages_statistic[lang]["vacancies_found"] = count
+        decoded_response = get_response(lang)
+        vacancies = decoded_response["items"]
+        salaries = []
+        for vacancy in vacancies:
+            salary = predict_rub_salary(vacancy)
+            salaries.append(salary)
+        vacancies_processed, average_salary = get_average_salary(salaries)
+        languages_statistic[lang]["vacancies_processed"] = vacancies_processed
+        languages_statistic[lang]["average_salary"] = average_salary
     print(languages_statistic)
 
 
