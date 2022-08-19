@@ -24,11 +24,14 @@ def predict_rub_salary(vacancy):
     if salary:
         if salary["currency"] == "RUR":
             if salary['from'] and salary['to']:
-                return (salary['from'] + salary['to']) / 2
+                predict_salary = int((salary['from'] + salary['to']) / 2)
+                return predict_salary
             elif salary['from']:
-                return salary['from'] * 1.2
+                predict_salary = int(salary['from'] * 1.2)
+                return predict_salary
             elif salary['to']:
-                return salary['to'] * 0.8
+                predict_salary = int(salary['to'] * 0.8)
+                return predict_salary
 
 
 def get_count_vacancies(programing_language):
@@ -40,7 +43,8 @@ def statistic_count_vacancies(programing_languages):
     languages_statistic = {}
     for lang in programing_languages:
         count = get_count_vacancies(lang)
-        languages_statistic[lang] = count
+        languages_statistic[lang] = {}
+        languages_statistic[lang]["vacancies_found"] = count
     print(languages_statistic)
 
 
@@ -57,11 +61,12 @@ def main():
         "C",
         "TypeScript",
     ]
-    decoded_response = get_response("Python")
-    vacancies = decoded_response["items"]
-    for vacancy in vacancies:
-        salary = predict_rub_salary(vacancy)
-        print(salary)
+    # decoded_response = get_response("Python")
+    # vacancies = decoded_response["items"]
+    # for vacancy in vacancies:
+    #     salary = predict_rub_salary(vacancy)
+    #     print(salary)
+    statistic_count_vacancies(programing_languages)
 
 
 if __name__ == "__main__":
