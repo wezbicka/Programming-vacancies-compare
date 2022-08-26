@@ -1,9 +1,40 @@
 import requests
 from itertools import count
-from pprint import pprint
 
 
-def get_response(programing_language):
+PROGRAMMING_LANGUAGES = [
+    "GO",
+    "JavaScript",
+    "Java",
+    "Python",
+    "Ruby",
+    "PHP",
+    "C++",
+    "C#",
+    "C",
+    "TypeScript",
+]
+
+
+def predict_salary(salary_from, salary_to):
+    if salary_from and salary_to:
+        return (salary_from + salary_to) / 2
+    elif salary_from:
+        return salary_from * 1.2
+    elif salary_from:
+        return salary_from * 0.8
+
+
+def count_average_salary(salaries):
+    salaries_amount = sum(salaries)
+    count = len(salaries)
+    average_salary = 0
+    if count:
+        average_salary = int(salaries_amount / count)
+    return average_salary, count
+
+
+def get_response():
     url = "https://api.hh.ru/vacancies/"
     # payload = {
     #     "text": f"Программист {programing_language}",
@@ -13,60 +44,47 @@ def get_response(programing_language):
     # response = requests.get(url, params=payload)
     # response.raise_for_status()
     # return response.json()
-    spisok = []
-    pages_number = 2
-    for page in count():
-        payload = {
-            'page': page,
-            "per_page": 100,
-            "text": f"Программист {programing_language}",
-            "area": "1",
-            "period": 30
-        }
-        page_response = requests.get(url, params=payload)
-        page_response.raise_for_status()
-        page_data = page_response.json()
-        spisok.append(page_data)
-        if page >= page_data["pages"]:
-            break
-    return spisok
+    general_statistic = {}
+    for language in PROGRAMMING_LANGUAGES:
+        salaries = []
+        language_static = {}
+        for number_page in count(0):
+            payload = {
+                "per_page": 100,
+                "text": f"Программист {language}",
+                "area": "1",
+                "period": 30
+            }
+            response = requests.get(url, params=payload)
+            response.raise_for_status()
+            page = response.json()
+            if number_page >= page["pages"]:
+                break
+            for vacancy in page["items"]:
+                salary_range = vacancy['salary']
+                if not salary_range:
+                    continue
+                if salary_range['currency'] != 'RUR':
+                    continue
+                vacancy_salary = predict_salary(
+                    salary_range['from'],
+                    salary_range['to']
+                )
+                if vacancy_salary:
+                    salaries.append(vacancy_salary)
+        average_salary, vacancies_processed = count_average_salary(salaries)
+        vacancies_amount = page['found']
+        language_static['vacancy_amount'] = vacancies_amount
+        language_static['vacancies_processed'] = vacancies_processed
+        language_static['average_salary'] = average_salary
+        general_statistic[language] = language_static
+    return general_statistic
 
 
 def print_salary(programing_language):
     decoded_response = get_response(programing_language)
     for vacancy in decoded_response["items"]:
         print(vacancy["salary"])
-
-
-def predict_rub_salary(vacancy):
-    salary = vacancy["salary"]
-    if salary:
-        if salary["currency"] == "RUR":
-            if salary['from'] and salary['to']:
-                predict_salary = int((salary['from'] + salary['to']) / 2)
-                return predict_salary
-            elif salary['from']:
-                predict_salary = int(salary['from'] * 1.2)
-                return predict_salary
-            elif salary['to']:
-                predict_salary = int(salary['to'] * 0.8)
-                return predict_salary
-
-
-def get_average_salary(salaries):
-    total = 0
-    count_vacancies = 0
-    for salary in salaries:
-        if salary:
-            count_vacancies += 1
-            total += salary
-    average_salary = int(total / count_vacancies)
-    return count_vacancies, average_salary
-
-
-def get_count_vacancies(programing_language):
-    count = get_response(programing_language)["found"]
-    return count
 
 
 def statistic_count_vacancies(programing_languages):
@@ -80,38 +98,29 @@ def statistic_count_vacancies(programing_languages):
             languages_statistic[lang]["vacancies_found"] = count
             vacancies = pages[page]["items"]
             for vacancy in vacancies:
-                salary = predict_rub_salary(vacancy)
+                salary = predict_salary(vacancy)
                 salaries.append(salary)
-        vacancies_processed, average_salary = get_average_salary(salaries)
+        vacancies_processed, average_salary = count_average_salary(salaries)
         languages_statistic[lang]["vacancies_processed"] = vacancies_processed
         languages_statistic[lang]["average_salary"] = average_salary
     print(languages_statistic)
 
 
 def main():
-    programing_languages = [
-        "GO",
-        "JavaScript",
-        "Java",
-        "Python",
-        "Ruby",
-        "PHP",
-        "C++",
-        "C#",
-        "C",
-        "TypeScript",
-    ]
+    
     # decoded_response = get_response("Python")
     # vacancies = decoded_response["items"]
     # for vacancy in vacancies:
     #     salary = predict_rub_salary(vacancy)
     #     print(salary)
 
-    statistic_count_vacancies(programing_languages)
+    #statistic_count_vacancies(programing_languages)
     # get_response("Python")
     # print_salary("Python")
-    for language in programing_languages:
-        pass
+    # for language in programing_languages:
+    #     pass
+    print(get_response())
+
 
 if __name__ == "__main__":
     main()
