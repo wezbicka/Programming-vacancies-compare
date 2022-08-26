@@ -1,16 +1,35 @@
 import requests
+from itertools import count
+from pprint import pprint
 
 
 def get_response(programing_language):
     url = "https://api.hh.ru/vacancies/"
-    payload = {
-        "text": f"Программист {programing_language}",
-        "area": "1",
-        "period": 30
+    # payload = {
+    #     "text": f"Программист {programing_language}",
+    #     "area": "1",
+    #     "period": 30
+    #     }
+    # response = requests.get(url, params=payload)
+    # response.raise_for_status()
+    # return response.json()
+    spisok = []
+    pages_number = 2
+    for page in count():
+        payload = {
+            'page': page,
+            "per_page": 100,
+            "text": f"Программист {programing_language}",
+            "area": "1",
+            "period": 30
         }
-    response = requests.get(url, params=payload)
-    response.raise_for_status()
-    return response.json()
+        page_response = requests.get(url, params=payload)
+        page_response.raise_for_status()
+        page_data = page_response.json()
+        spisok.append(page_data)
+        if page >= page_data["pages"]:
+            break
+    return spisok
 
 
 def print_salary(programing_language):
@@ -52,16 +71,17 @@ def get_count_vacancies(programing_language):
 
 def statistic_count_vacancies(programing_languages):
     languages_statistic = {}
-    for lang in programing_languages:
-        count = get_count_vacancies(lang)
+    for lang in programing_languages: 
         languages_statistic[lang] = {}
-        languages_statistic[lang]["vacancies_found"] = count
-        decoded_response = get_response(lang)
-        vacancies = decoded_response["items"]
+        pages = get_response(lang)
         salaries = []
-        for vacancy in vacancies:
-            salary = predict_rub_salary(vacancy)
-            salaries.append(salary)
+        for page in pages:
+            count = get_count_vacancies(page)
+            languages_statistic[lang]["vacancies_found"] = count
+            vacancies = pages[page]["items"]
+            for vacancy in vacancies:
+                salary = predict_rub_salary(vacancy)
+                salaries.append(salary)
         vacancies_processed, average_salary = get_average_salary(salaries)
         languages_statistic[lang]["vacancies_processed"] = vacancies_processed
         languages_statistic[lang]["average_salary"] = average_salary
@@ -86,8 +106,12 @@ def main():
     # for vacancy in vacancies:
     #     salary = predict_rub_salary(vacancy)
     #     print(salary)
-    statistic_count_vacancies(programing_languages)
 
+    statistic_count_vacancies(programing_languages)
+    # get_response("Python")
+    # print_salary("Python")
+    for language in programing_languages:
+        pass
 
 if __name__ == "__main__":
     main()
