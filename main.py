@@ -23,7 +23,7 @@ def count_average_salary(salaries):
 def predict_rub_salary_hh(language):
     url = "https://api.hh.ru/vacancies/"
     salaries = []
-    language_static = {}
+    language_statistic = {}
     for number_page in count(0):
         payload = {
             "per_page": 100,
@@ -50,10 +50,10 @@ def predict_rub_salary_hh(language):
                 salaries.append(vacancy_salary)
     average_salary, vacancies_processed = count_average_salary(salaries)
     vacancies_amount = page['found']
-    language_static['vacancies_found'] = vacancies_amount
-    language_static['vacancies_processed'] = vacancies_processed
-    language_static['average_salary'] = average_salary
-    return language_static
+    language_statistic['vacancies_found'] = vacancies_amount
+    language_statistic['vacancies_processed'] = vacancies_processed
+    language_statistic['average_salary'] = average_salary
+    return language_statistic
 
 
 def predict_rub_salary_for_superJob():
