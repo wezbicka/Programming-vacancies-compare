@@ -1,4 +1,6 @@
 from itertools import count
+import os
+from dotenv import load_dotenv
 
 import requests
 from terminaltables import AsciiTable
@@ -56,8 +58,7 @@ def predict_rub_salary_hh(language):
     return language_statistic
 
 
-def predict_rub_salary_for_superJob():
-    url = "https://api.superjob.ru/2.0/vacancies/"
+
 
 
 def create_table(title, statistic):
@@ -83,6 +84,8 @@ def create_table(title, statistic):
 
 
 def main():
+    load_dotenv()
+    superjob_token = os.environ['SUPERJOB_SECRET_KEY']
     programming_languages = [
         "GO",
         "JavaScript",
@@ -95,11 +98,19 @@ def main():
         "C",
         "TypeScript"
     ]
-    salary_statistic = {}
-    for language in programming_languages:
-        salary_statistic[language] = predict_rub_salary_hh(language)
-    title = "HeadHunter Moscow"
-    print(create_table(title, salary_statistic))
+    # salary_statistic = {}
+    # for language in programming_languages:
+    #     salary_statistic[language] = predict_rub_salary_hh(language)
+    # title = "HeadHunter Moscow"
+    # print(create_table(title, salary_statistic))
+
+    url = "https://api.superjob.ru/2.0/vacancies/"
+    header = {
+        "X-Api-App-Id": superjob_token,
+    }
+    response = requests.get(url, headers=header)
+    response.raise_for_status()
+    print(response.json()['objects'])
 
 
 if __name__ == "__main__":
