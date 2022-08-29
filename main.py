@@ -58,7 +58,50 @@ def predict_rub_salary_hh(language):
     return language_statistic
 
 
-
+def predict_rub_salary_for_superJob(language, superjob_token):
+    url = "https://api.superjob.ru/3.0/vacancies/"
+    salaries = []
+    language_statistic = {}
+    page_number = 0
+    vacancy_amount = 0
+    more_pages = True
+    town_id = 4
+    professions_catalog = 48
+    vacancies_number = 100
+    while more_pages:
+        headers = {
+            'X-Api-App-Id': superjob_token
+        }
+        payload = {
+            'town': town_id,
+            'catalogues': professions_catalog,
+            'page': page_number,
+            'count': vacancies_number,
+            'keyword': language
+        }
+        response = requests.get(
+            url,
+            headers=headers,
+            params=payload
+            )
+        response.raise_for_status()
+        page = response.json()
+        for vacancy in page['objects']:
+            if vacancy['currency'] == 'rub':
+                vacancy_salary = predict_salary(
+                    vacancy['payment_from'],
+                    vacancy['payment_to']
+                )
+            if vacancy_salary:
+                salaries.append(vacancy_salary)
+        page_number += 1
+        vacancy_amount += page['total']
+        more_pages = page['more']
+    average_salary, processed_vacancies = count_average_salary(salaries)
+    language_statistic['vacancy_amount'] = vacancy_amount
+    language_statistic['vacancies_processed'] = processed_vacancies
+    language_statistic['average_salary'] = int(average_salary)
+    return language_statistic
 
 
 def create_table(title, statistic):
@@ -98,19 +141,14 @@ def main():
         "C",
         "TypeScript"
     ]
-    # salary_statistic = {}
-    # for language in programming_languages:
-    #     salary_statistic[language] = predict_rub_salary_hh(language)
+    # salary_statistic_hh = {}
+    programming_jobs_sj = {}
+    for language in programming_languages:
+        # salary_statistic[language] = predict_rub_salary_hh(language)
+        programming_jobs_sj[language] = predict_rub_salary_for_superJob(language, superjob_token)
     # title = "HeadHunter Moscow"
     # print(create_table(title, salary_statistic))
-
-    url = "https://api.superjob.ru/2.0/vacancies/"
-    header = {
-        "X-Api-App-Id": superjob_token,
-    }
-    response = requests.get(url, headers=header)
-    response.raise_for_status()
-    print(response.json()['objects'])
+    print(programming_jobs_sj)
 
 
 if __name__ == "__main__":
