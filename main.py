@@ -98,7 +98,7 @@ def predict_rub_salary_for_superJob(language, superjob_token):
         vacancy_amount += page['total']
         more_pages = page['more']
     average_salary, processed_vacancies = count_average_salary(salaries)
-    language_statistic['vacancy_amount'] = vacancy_amount
+    language_statistic['vacancies_found'] = vacancy_amount
     language_statistic['vacancies_processed'] = processed_vacancies
     language_statistic['average_salary'] = int(average_salary)
     return language_statistic
@@ -141,14 +141,15 @@ def main():
         "C",
         "TypeScript"
     ]
-    # salary_statistic_hh = {}
-    programming_jobs_sj = {}
+    salary_statistic_hh = {}
+    salary_statistic_sj = {}
     for language in programming_languages:
-        # salary_statistic[language] = predict_rub_salary_hh(language)
-        programming_jobs_sj[language] = predict_rub_salary_for_superJob(language, superjob_token)
-    # title = "HeadHunter Moscow"
-    # print(create_table(title, salary_statistic))
-    print(programming_jobs_sj)
+        salary_statistic_hh[language] = predict_rub_salary_hh(language)
+        salary_statistic_sj[language] = predict_rub_salary_for_superJob(language, superjob_token)
+    title_hh = "HeadHunter Moscow"
+    print(create_table(title_hh, salary_statistic_hh))
+    title_sj = "SuperJob Moscow"
+    print(create_table(title_sj, salary_statistic_sj))
 
 
 if __name__ == "__main__":
