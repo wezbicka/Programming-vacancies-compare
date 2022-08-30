@@ -26,12 +26,15 @@ def predict_rub_salary_hh(language):
     url = "https://api.hh.ru/vacancies/"
     salaries = []
     language_statistic = {}
+    area_id = "1"
+    days_period = 30
+    per_page = 100
     for number_page in count(0):
         payload = {
-            "per_page": 100,
+            "per_page": per_page,
             "text": f"Программист {language}",
-            "area": "1",
-            "period": 30,
+            "area": area_id,
+            "period": days_period,
         }
         response = requests.get(url, params=payload)
         response.raise_for_status()
