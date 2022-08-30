@@ -114,7 +114,7 @@ def create_table(title, statistic):
         'Вакансий обработано',
         'Средняя зарплата',
     ]
-    table_data = [
+    table = [
         table_header,
     ]
     for lang, params in statistic.items():
@@ -124,8 +124,8 @@ def create_table(title, statistic):
             params['vacancies_processed'],
             params['average_salary'],
         ]
-        table_data.append(table_raw)
-    table = AsciiTable(table_data, title)
+        table.append(table_raw)
+    table = AsciiTable(table, title)
     return table.table
 
 
